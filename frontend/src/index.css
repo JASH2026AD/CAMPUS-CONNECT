@@ -1,0 +1,112 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #FF7A00;
+  --color-primary-dark: #E06B00;
+  --color-primary-light: #FFA500;
+  --color-primary-royal: #FF8C00;
+  --color-darkBg: #0F172A;
+  --color-darkCard: #1E293B;
+  --color-darkBorder: #334155;
+  --color-accentGray: #F5F5F5;
+  --color-textDark: #1F2937;
+  
+  --color-dark-bg: #0F172A;
+  --color-dark-card: #1E293B;
+  --color-dark-border: #334155;
+  --color-accent-gray: #F5F5F5;
+  --color-text-dark: #1F2937;
+}
+
+@layer base {
+  body {
+    @apply bg-[#FAF9F6] text-slate-800 transition-colors duration-300 ease-in-out font-sans antialiased;
+  }
+  
+  body.dark {
+    @apply bg-darkBg text-slate-100;
+  }
+}
+
+/* Glassmorphism Styles */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.dark .glass-panel {
+  background: rgba(30, 41, 59, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.04);
+}
+
+.dark .glass-card {
+  background: rgba(30, 41, 59, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-300 rounded-full;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  @apply bg-slate-700;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-400;
+}
+
+/* Animation utilities */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.animate-pulse-soft {
+  animation: pulse-soft 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Premium Gradient backgrounds */
+.bg-mesh {
+  background-color: #FAF9F6;
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(255, 122, 0, 0.08) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(255, 140, 0, 0.06) 0px, transparent 50%);
+}
+
+.dark .bg-mesh {
+  background-color: #0F172A;
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(255, 122, 0, 0.12) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(30, 41, 59, 0.8) 0px, transparent 50%);
+}

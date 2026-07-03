@@ -1,0 +1,271 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                     Int               @id @default(autoincrement())
+  email                  String            @unique
+  password               String
+  role                   String            @default("STUDENT") // "STUDENT", "ADMIN"
+  isVerified             Boolean           @default(false)
+  verificationCode       String?
+  resetToken             String?
+  resetTokenExpiry       DateTime?
+  createdAt              DateTime          @default(now())
+  updatedAt              DateTime          @updatedAt
+
+  profile                Profile?
+  reputationScores       ReputationScore[]
+  sentSkillRequests      SkillRequest[]    @relation("SentSkillRequests")
+  receivedSkillRequests  SkillRequest[]    @relation("ReceivedSkillRequests")
+  marketplaceItems       MarketplaceItem[] @relation("UserMarketplaceItems")
+  wishlists              Wishlist[]
+  reviews                ItemReview[]
+  lostItems              LostItem[]
+  foundItems             FoundItem[]
+  claims                 Claim[]
+  sentMessages           Message[]         @relation("SentMessages")
+  receivedMessages       Message[]         @relation("ReceivedMessages")
+  notifications          Notification[]
+  filedReports           Report[]          @relation("FiledReports")
+  receivedReports        Report[]          @relation("ReceivedReports")
+
+  @@map("users")
+}
+
+model Profile {
+  id                  Int      @id @default(autoincrement())
+  userId              Int      @unique
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name                String
+  avatar              String?
+  bio                 String?  @db.Text
+  major               String?
+  graduationYear      Int?
+  marketplaceRating   Float    @default(0.0)
+  skillRating         Float    @default(0.0)
+  trustScore          Float    @default(100.0)
+  successfulExchanges Int      @default(0)
+  itemsReturned       Int      @default(0)
+  reputationScore     Int      @default(0)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  skills              Skill[]
+
+  @@map("profiles")
+}
+
+model Skill {
+  id        Int      @id @default(autoincrement())
+  profileId Int
+  profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  name      String
+  type      String   // "OFFERED", "WANTED"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("skills")
+}
+
+model SkillRequest {
+  id         Int            @id @default(autoincrement())
+  senderId   Int
+  sender     User           @relation("SentSkillRequests", fields: [senderId], references: [id], onDelete: Cascade)
+  receiverId Int
+  receiver   User           @relation("ReceivedSkillRequests", fields: [receiverId], references: [id], onDelete: Cascade)
+  skillName  String
+  message    String?        @db.Text
+  status     String         @default("PENDING") // "PENDING", "ACCEPTED", "REJECTED"
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+  sessions   SkillSession[]
+
+  @@map("skill_requests")
+}
+
+model SkillSession {
+  id                Int          @id @default(autoincrement())
+  requestId         Int
+  request           SkillRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  scheduledAt       DateTime
+  status            String       @default("SCHEDULED") // "SCHEDULED", "COMPLETED", "CANCELLED"
+  ratingToSender    Float?
+  ratingToReceiver  Float?
+  reviewToSender    String?      @db.Text
+  reviewToReceiver  String?      @db.Text
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  @@map("skill_sessions")
+}
+
+model MarketplaceItem {
+  id          Int         @id @default(autoincrement())
+  sellerId    Int
+  seller      User        @relation("UserMarketplaceItems", fields: [sellerId], references: [id], onDelete: Cascade)
+  title       String
+  description String      @db.Text
+  price       Float
+  category    String      // "BOOKS", "ELECTRONICS", "STATIONERY", "LAB_EQUIPMENT", "OTHERS"
+  status      String      @default("AVAILABLE") // "AVAILABLE", "SOLD"
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  images      ItemImage[]
+  wishlists   Wishlist[]
+  reviews     ItemReview[]
+  reports     Report[]
+
+  @@map("marketplace_items")
+}
+
+model ItemImage {
+  id        Int             @id @default(autoincrement())
+  itemId    Int
+  item      MarketplaceItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  url       String
+  createdAt DateTime        @default(now())
+
+  @@map("item_images")
+}
+
+model Wishlist {
+  id        Int             @id @default(autoincrement())
+  userId    Int
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  itemId    Int
+  item      MarketplaceItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  createdAt DateTime        @default(now())
+
+  @@map("wishlists")
+}
+
+model ItemReview {
+  id              Int             @id @default(autoincrement())
+  reviewerId      Int
+  reviewer        User            @relation(fields: [reviewerId], references: [id], onDelete: Cascade)
+  itemId          Int
+  item            MarketplaceItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  rating          Float
+  comment         String          @db.Text
+  sentiment       String?
+  summary         String?         @db.Text
+  spamProbability Float?
+  pros            String?         @db.Text // Comma separated values or JSON string
+  cons            String?         @db.Text // Comma separated values or JSON string
+  trustPercentage Float?
+  createdAt       DateTime        @default(now())
+
+  @@map("item_reviews")
+}
+
+model LostItem {
+  id                  Int      @id @default(autoincrement())
+  reporterId          Int
+  reporter            User     @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+  title               String
+  description         String   @db.Text
+  category            String
+  location            String
+  lostAt              DateTime
+  status              String   @default("LOST") // "LOST", "CLAIMED"
+  imageUrl            String?
+  verificationQuestion String   @db.Text
+  createdAt           DateTime @default(now())
+  claims              Claim[]  @relation("LostItemClaims")
+
+  @@map("lost_items")
+}
+
+model FoundItem {
+  id                  Int      @id @default(autoincrement())
+  reporterId          Int
+  reporter            User     @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+  title               String
+  description         String   @db.Text
+  category            String
+  location            String
+  foundAt             DateTime
+  status              String   @default("FOUND") // "FOUND", "CLAIMED"
+  imageUrl            String?
+  verificationQuestion String   @db.Text
+  createdAt           DateTime @default(now())
+  claims              Claim[]  @relation("FoundItemClaims")
+
+  @@map("found_items")
+}
+
+model Claim {
+  id          Int        @id @default(autoincrement())
+  claimerId   Int
+  claimer     User       @relation(fields: [claimerId], references: [id], onDelete: Cascade)
+  lostItemId  Int?
+  lostItem    LostItem?  @relation("LostItemClaims", fields: [lostItemId], references: [id], onDelete: Cascade)
+  foundItemId Int?
+  foundItem   FoundItem? @relation("FoundItemClaims", fields: [foundItemId], references: [id], onDelete: Cascade)
+  answer      String     @db.Text
+  status      String     @default("PENDING") // "PENDING", "APPROVED", "REJECTED"
+  createdAt   DateTime   @default(now())
+
+  @@map("claims")
+}
+
+model Message {
+  id         Int      @id @default(autoincrement())
+  senderId   Int
+  sender     User     @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  receiverId Int
+  receiver   User     @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+  content    String   @db.Text
+  isRead     Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  @@map("messages")
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String   @db.Text
+  type      String   @default("GENERAL") // "GENERAL", "CHAT", "SKILL", "MARKETPLACE", "LOST_FOUND"
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@map("notifications")
+}
+
+model Report {
+  id                 Int              @id @default(autoincrement())
+  reporterId         Int
+  reporter           User             @relation("FiledReports", fields: [reporterId], references: [id], onDelete: Cascade)
+  reportedUserId     Int?
+  reportedUser       User?            @relation("ReceivedReports", fields: [reportedUserId], references: [id], onDelete: Cascade)
+  marketplaceItemId  Int?
+  marketplaceItem    MarketplaceItem? @relation(fields: [marketplaceItemId], references: [id], onDelete: Cascade)
+  reason             String           @db.Text
+  status             String           @default("PENDING") // "PENDING", "RESOLVED"
+  createdAt          DateTime         @default(now())
+
+  @@map("reports")
+}
+
+model ReputationScore {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  score     Int
+  category  String   // "MARKETPLACE", "SKILL", "TRUST", "RETURN_RATE"
+  details   String?  @db.Text
+  createdAt DateTime @default(now())
+
+  @@map("reputation_scores")
+}
