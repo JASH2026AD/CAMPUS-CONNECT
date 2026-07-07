@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { PageHeader, LoadingSkeleton, EmptyState } from '../components/Common';
-import { User, Tag, Plus, Trash2, Edit3, Save, BookOpen, Award, CheckCircle } from 'lucide-react';
+import { User, Tag, Plus, Trash2, Edit3, Save, BookOpen, Award, CheckCircle, Camera } from 'lucide-react';
 import api from '../api/axios';
 
 export default function Profile() {
@@ -15,6 +15,7 @@ export default function Profile() {
   const [major, setMajor] = useState('');
   const [graduationYear, setGraduationYear] = useState('');
   const [avatar, setAvatar] = useState('');
+  const fileInputRef = useRef(null);
   
   // Skills offered/wanted managing
   const [skills, setSkills] = useState([]);
@@ -69,6 +70,21 @@ export default function Profile() {
     }
   };
 
+  const handleAvatarUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      showToast('Image must be under 2MB.', 'warning');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setAvatar(reader.result);
+      showToast('Photo selected! Save to apply.', 'success');
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleAddSkill = () => {
     if (!newSkillName.trim()) {
       showToast('Skill name cannot be empty.', 'warning');
@@ -106,11 +122,48 @@ export default function Profile() {
         {/* Profile Card View / Edit Column */}
         <div className="lg:col-span-1 flex flex-col gap-6">
           <div className="glass-card p-6 flex flex-col items-center text-center gap-4">
-            <img
-              src={avatar || 'https://api.dicebear.com/7.x/adventurer/svg?seed=avatar'}
-              alt="Avatar"
-              className="w-24 h-24 rounded-full bg-orange-100 dark:bg-slate-800 object-cover border border-gray-200"
+            {/* Hidden file input */}
+            <input
+              type="file"
+              accept="image/*"
+              ref={fileInputRef}
+              onChange={handleAvatarUpload}
+              className="hidden"
             />
+
+            {/* Clickable avatar with camera overlay when editing */}
+            <div
+              className={`relative group ${isEditing ? 'cursor-pointer' : ''}`}
+              onClick={() => isEditing && fileInputRef.current?.click()}
+              title={isEditing ? 'Click to upload photo' : ''}
+            >
+              <img
+                src={avatar || 'https://api.dicebear.com/7.x/adventurer/svg?seed=avatar'}
+                alt="Avatar"
+                className={`w-24 h-24 rounded-full bg-orange-100 dark:bg-slate-800 object-cover border-2 transition-all duration-200 ${
+                  isEditing
+                    ? 'border-primary/60 group-hover:border-primary group-hover:brightness-75'
+                    : 'border-gray-200 dark:border-slate-700'
+                }`}
+              />
+              {isEditing && (
+                <div className="absolute inset-0 rounded-full flex items-center justify-center bg-black/0 group-hover:bg-black/30 transition-all duration-200">
+                  <Camera className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+                </div>
+              )}
+            </div>
+
+            {/* Upload hint shown only in edit mode */}
+            {isEditing && (
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold rounded-lg border border-primary/30 text-primary hover:bg-orange-50 dark:hover:bg-orange-950/20 transition-colors"
+              >
+                <Camera className="w-3.5 h-3.5" />
+                Upload Photo
+              </button>
+            )}
             
             {!isEditing ? (
               <div className="flex flex-col gap-1 items-center">
@@ -136,16 +189,6 @@ export default function Profile() {
               </div>
             ) : (
               <form onSubmit={handleSave} className="w-full flex flex-col gap-4 text-left">
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-bold text-gray-600 uppercase">Avatar URL</label>
-                  <input
-                    type="text"
-                    value={avatar}
-                    onChange={(e) => setAvatar(e.target.value)}
-                    placeholder="https://api.dicebear.com/..."
-                    className="w-full px-3 py-2 text-xs rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-black dark:text-white focus:outline-none"
-                  />
-                </div>
 
                 <div className="flex flex-col gap-1.5">
                   <label className="text-xs font-bold text-gray-600 uppercase">Full Name *</label>
