@@ -7,13 +7,13 @@ export const LoadingSkeleton = ({ type = 'card', count = 1 }) => {
   const renderItem = (key) => {
     if (type === 'card') {
       return (
-        <div key={key} className="glass-card rounded-2xl p-5 w-full flex flex-col gap-4 animate-pulse">
-          <div className="w-full h-48 bg-gray-200/50 dark:bg-slate-700/50 rounded-xl" />
-          <div className="h-6 w-3/4 bg-gray-200/50 dark:bg-slate-700/50 rounded-lg" />
-          <div className="h-4 w-1/2 bg-gray-200/50 dark:bg-slate-700/50 rounded-lg" />
-          <div className="flex gap-2">
-            <div className="h-8 w-1/4 bg-gray-200/50 dark:bg-slate-700/50 rounded-lg" />
-            <div className="h-8 w-1/4 bg-gray-200/50 dark:bg-slate-700/50 rounded-lg" />
+        <div key={key} className="glass-card rounded-2xl p-6 w-full flex flex-col gap-4 animate-pulse">
+          <div className="w-full h-48 bg-gray-100 dark:bg-slate-800/80 rounded-xl" />
+          <div className="h-6 w-3/4 bg-gray-100 dark:bg-slate-800/80 rounded-lg" />
+          <div className="h-4 w-1/2 bg-gray-100 dark:bg-slate-800/80 rounded-lg" />
+          <div className="flex gap-2 mt-2">
+            <div className="h-9 w-1/4 bg-gray-100 dark:bg-slate-800/80 rounded-lg" />
+            <div className="h-9 w-1/4 bg-gray-100 dark:bg-slate-800/80 rounded-lg" />
           </div>
         </div>
       );
@@ -21,11 +21,11 @@ export const LoadingSkeleton = ({ type = 'card', count = 1 }) => {
     
     if (type === 'list') {
       return (
-        <div key={key} className="glass-panel border-b border-gray-200/30 dark:border-slate-800/30 p-4 flex gap-4 items-center animate-pulse">
-          <div className="w-12 h-12 rounded-full bg-gray-200/50 dark:bg-slate-700/50" />
+        <div key={key} className="p-4 flex gap-4 items-center animate-pulse border-b border-gray-100 dark:border-slate-800/60">
+          <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-slate-800/80" />
           <div className="flex-1 flex flex-col gap-2">
-            <div className="h-5 w-1/3 bg-gray-200/50 dark:bg-slate-700/50 rounded-lg" />
-            <div className="h-4 w-2/3 bg-gray-200/50 dark:bg-slate-700/50 rounded-lg" />
+            <div className="h-5 w-1/3 bg-gray-100 dark:bg-slate-800/80 rounded-lg" />
+            <div className="h-4 w-2/3 bg-gray-100 dark:bg-slate-800/80 rounded-lg" />
           </div>
         </div>
       );
@@ -35,12 +35,12 @@ export const LoadingSkeleton = ({ type = 'card', count = 1 }) => {
       return (
         <div key={key} className="flex flex-col gap-4 animate-pulse p-4">
           <div className="flex items-start gap-3">
-            <div className="w-8 h-8 rounded-full bg-gray-200/50 dark:bg-slate-700/50" />
-            <div className="h-10 w-2/5 bg-gray-200/50 dark:bg-slate-700/50 rounded-xl" />
+            <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-slate-800/80" />
+            <div className="h-10 w-2/5 bg-gray-100 dark:bg-slate-800/80 rounded-xl" />
           </div>
           <div className="flex items-start gap-3 justify-end">
-            <div className="h-10 w-1/3 bg-primary/20 rounded-xl" />
-            <div className="w-8 h-8 rounded-full bg-gray-200/50 dark:bg-slate-700/50" />
+            <div className="h-10 w-1/3 bg-orange-100 dark:bg-orange-950/20 rounded-xl" />
+            <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-slate-800/80" />
           </div>
         </div>
       );
@@ -58,6 +58,7 @@ export const LoadingSkeleton = ({ type = 'card', count = 1 }) => {
 
 // Premium Empty State Display
 export const EmptyState = ({
+  icon: Icon,
   emoji = '📪',
   title = 'No items found',
   description = 'There are no active entries listed at the moment.',
@@ -66,13 +67,17 @@ export const EmptyState = ({
 }) => {
   return (
     <div className="flex flex-col items-center justify-center p-12 text-center glass-card rounded-2xl my-6">
-      <span className="text-6xl mb-4 animate-float select-none">{emoji}</span>
-      <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200 mb-1">{title}</h3>
-      <p className="text-sm text-gray-500 dark:text-gray-400 max-w-sm mb-6">{description}</p>
+      {Icon ? (
+        <Icon className="w-12 h-12 text-slate-600 dark:text-slate-600 mb-4" />
+      ) : (
+        <span className="text-5xl mb-4 select-none">{emoji}</span>
+      )}
+      <h3 className="text-xl font-bold text-[#000000] dark:text-slate-100 mb-1">{title}</h3>
+      <p className="text-sm text-[#374151] dark:text-slate-400 max-w-sm mb-6 leading-relaxed">{description}</p>
       {actionText && onAction && (
         <button
           onClick={onAction}
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary hover:bg-primary-dark text-white text-sm font-semibold shadow-premium transition-all transform hover:-translate-y-0.5"
+          className="btn-primary py-2.5 px-5 text-sm"
         >
           {actionText}
         </button>
@@ -82,16 +87,20 @@ export const EmptyState = ({
 };
 
 // Common Page Header
-export const PageHeader = ({ title, subtitle, emoji }) => {
+export const PageHeader = ({ title, subtitle, icon: Icon, emoji }) => {
   return (
-    <div className="flex flex-col gap-1 mb-8">
-      <div className="flex items-center gap-2">
-        {emoji && <span className="text-3xl select-none">{emoji}</span>}
-        <h1 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
+    <div className="flex flex-col gap-1.5 mb-8">
+      <div className="flex items-center gap-3">
+        {Icon ? (
+          <Icon className="w-8 h-8 text-primary" />
+        ) : (
+          emoji && <span className="text-3xl select-none">{emoji}</span>
+        )}
+        <h1 className="text-3xl sm:text-[36px] font-bold tracking-tight text-[#000000] dark:text-slate-50">
           {title}
         </h1>
       </div>
-      {subtitle && <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">{subtitle}</p>}
+      {subtitle && <p className="text-base text-[#374151] dark:text-slate-400 leading-relaxed font-normal">{subtitle}</p>}
     </div>
   );
 };

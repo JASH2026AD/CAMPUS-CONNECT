@@ -69,10 +69,10 @@ export const ToastProvider = ({ children }) => {
         {toasts.map((toast) => (
           <div
             key={toast.id}
-            className={`flex items-center justify-between p-4 rounded-xl border glass-panel shadow-premium pointer-events-auto transition-all duration-300 transform translate-y-0 scale-100 ${getToastStyles(toast.type)}`}
+            className={`flex items-center justify-between p-4 rounded-xl border glass-panel shadow-md pointer-events-auto transition-all duration-300 transform translate-y-0 scale-100 ${getToastStyles(toast.type)}`}
           >
             <div className="flex items-center gap-3">
-              <span className="text-lg">{getToastEmoji(toast.type)}</span>
+              <div className="flex-shrink-0">{getToastIcon(toast.type)}</div>
               <p className="text-sm font-medium">{toast.message}</p>
             </div>
             <button

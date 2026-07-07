@@ -22,9 +22,9 @@ export const AuthProvider = ({ children }) => {
     
     setTheme(savedTheme);
     if (savedTheme === 'dark') {
-      document.body.classList.add('dark');
+      document.documentElement.classList.add('dark');
     } else {
-      document.body.classList.remove('dark');
+      document.documentElement.classList.remove('dark');
     }
     
     setLoading(false);
@@ -36,9 +36,9 @@ export const AuthProvider = ({ children }) => {
     setTheme(nextTheme);
     localStorage.setItem('theme', nextTheme);
     if (nextTheme === 'dark') {
-      document.body.classList.add('dark');
+      document.documentElement.classList.add('dark');
     } else {
-      document.body.classList.remove('dark');
+      document.documentElement.classList.remove('dark');
     }
   };
 

@@ -97,33 +97,35 @@ export default function AdminPanel() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-6 text-left">
-      <PageHeader title="Platform Administration" subtitle="Moderate reported student profiles, inspect spam flags, and view usage metrics" emoji="🛡️" />
+      <div className="border-b border-gray-200 dark:border-slate-800 pb-4">
+        <PageHeader title="Platform Administration" subtitle="Moderate reported student profiles, inspect spam flags, and view usage metrics" icon={Shield} />
+      </div>
 
       {/* Tabs */}
-      <div className="border-b border-gray-200/40 dark:border-slate-800/40 flex gap-4">
+      <div className="border-b border-gray-200 dark:border-slate-800 flex gap-4">
         <button
           onClick={() => setActiveTab('stats')}
-          className={`pb-3 text-sm font-extrabold border-b-2 transition-all ${
-            activeTab === 'stats' ? 'border-primary text-primary' : 'border-transparent text-gray-400 hover:text-gray-600 dark:hover:text-gray-200'
+          className={`pb-3 text-sm font-semibold border-b-2 transition-all ${
+            activeTab === 'stats' ? 'border-primary text-primary' : 'border-transparent text-gray-600 hover:text-[#374151]'
           }`}
         >
-          Analytics & Statistics 📊
+          Analytics & Statistics
         </button>
         <button
           onClick={() => setActiveTab('users')}
-          className={`pb-3 text-sm font-extrabold border-b-2 transition-all ${
-            activeTab === 'users' ? 'border-primary text-primary' : 'border-transparent text-gray-400 hover:text-gray-600 dark:hover:text-gray-200'
+          className={`pb-3 text-sm font-semibold border-b-2 transition-all ${
+            activeTab === 'users' ? 'border-primary text-primary' : 'border-transparent text-gray-600 hover:text-[#374151]'
           }`}
         >
-          Manage Users ({stats?.users?.total || 0}) 👥
+          Manage Users ({stats?.users?.total || 0})
         </button>
         <button
           onClick={() => setActiveTab('reports')}
-          className={`pb-3 text-sm font-extrabold border-b-2 transition-all ${
-            activeTab === 'reports' ? 'border-primary text-primary' : 'border-transparent text-gray-400 hover:text-gray-600 dark:hover:text-gray-200'
+          className={`pb-3 text-sm font-semibold border-b-2 transition-all ${
+            activeTab === 'reports' ? 'border-primary text-primary' : 'border-transparent text-gray-600 hover:text-[#374151]'
           }`}
         >
-          Moderation Reports ({stats?.reports?.pending || 0}) 🚨
+          Moderation Reports ({stats?.reports?.pending || 0})
         </button>
       </div>
 
@@ -132,63 +134,63 @@ export default function AdminPanel() {
         <div className="flex flex-col gap-8">
           {/* Quick Metrics Grid */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="glass-card p-5 rounded-2xl border border-white/20 shadow-premium">
-              <div className="flex justify-between items-center text-gray-400">
-                <span className="text-xs font-bold uppercase tracking-wider">Total Registrants</span>
+            <div className="glass-card p-6 flex flex-col gap-3">
+              <div className="flex justify-between items-center text-gray-600">
+                <span className="text-[10px] font-bold uppercase tracking-wider">Total Registrants</span>
                 <Users className="w-5 h-5 text-blue-500" />
               </div>
-              <p className="text-3xl font-extrabold text-slate-800 dark:text-white mt-2">{stats.users.total}</p>
-              <p className="text-[10px] text-gray-400 font-semibold mt-1">Students: {stats.users.students} | Admins: {stats.users.admins}</p>
+              <p className="text-3xl font-extrabold text-[#000000] dark:text-white mt-1">{stats.users.total}</p>
+              <p className="text-[10px] text-gray-405 font-bold">Students: {stats.users.students} | Admins: {stats.users.admins}</p>
             </div>
 
-            <div className="glass-card p-5 rounded-2xl border border-white/20 shadow-premium">
-              <div className="flex justify-between items-center text-gray-400">
-                <span className="text-xs font-bold uppercase tracking-wider">Marketplace Volume</span>
+            <div className="glass-card p-6 flex flex-col gap-3">
+              <div className="flex justify-between items-center text-gray-600">
+                <span className="text-[10px] font-bold uppercase tracking-wider">Marketplace Volume</span>
                 <ShoppingBag className="w-5 h-5 text-emerald-500" />
               </div>
-              <p className="text-3xl font-extrabold text-slate-800 dark:text-white mt-2">{stats.marketplace.total}</p>
-              <p className="text-[10px] text-gray-400 font-semibold mt-1">Available: {stats.marketplace.available} | Sold: {stats.marketplace.sold}</p>
+              <p className="text-3xl font-extrabold text-[#000000] dark:text-white mt-1">{stats.marketplace.total}</p>
+              <p className="text-[10px] text-gray-405 font-bold">Available: {stats.marketplace.available} | Sold: {stats.marketplace.sold}</p>
             </div>
 
-            <div className="glass-card p-5 rounded-2xl border border-white/20 shadow-premium">
-              <div className="flex justify-between items-center text-gray-400">
-                <span className="text-xs font-bold uppercase tracking-wider">Claims Lodged</span>
+            <div className="glass-card p-6 flex flex-col gap-3">
+              <div className="flex justify-between items-center text-gray-600">
+                <span className="text-[10px] font-bold uppercase tracking-wider">Claims Lodged</span>
                 <Search className="w-5 h-5 text-rose-500" />
               </div>
-              <p className="text-3xl font-extrabold text-slate-800 dark:text-white mt-2">{stats.lostFound.claims}</p>
-              <p className="text-[10px] text-gray-400 font-semibold mt-1">Pending verification: {stats.lostFound.pendingClaims}</p>
+              <p className="text-3xl font-extrabold text-[#000000] dark:text-white mt-1">{stats.lostFound.claims}</p>
+              <p className="text-[10px] text-gray-405 font-bold">Pending: {stats.lostFound.pendingClaims}</p>
             </div>
 
-            <div className="glass-card p-5 rounded-2xl border border-white/20 shadow-premium">
-              <div className="flex justify-between items-center text-gray-400">
-                <span className="text-xs font-bold uppercase tracking-wider">Exchanges Run</span>
+            <div className="glass-card p-6 flex flex-col gap-3">
+              <div className="flex justify-between items-center text-gray-600">
+                <span className="text-[10px] font-bold uppercase tracking-wider">Exchanges Run</span>
                 <Award className="w-5 h-5 text-orange-500" />
               </div>
-              <p className="text-3xl font-extrabold text-slate-800 dark:text-white mt-2">{stats.skills.requests}</p>
-              <p className="text-[10px] text-gray-400 font-semibold mt-1">Completed matches: {stats.skills.completedSessions}</p>
+              <p className="text-3xl font-extrabold text-[#000000] dark:text-white mt-1">{stats.skills.requests}</p>
+              <p className="text-[10px] text-gray-405 font-bold">Completed matches: {stats.skills.completedSessions}</p>
             </div>
           </div>
 
           {/* Platforms Overview card */}
-          <div className="glass-card border rounded-2xl p-6 shadow-premium flex flex-col gap-4">
-            <h3 className="font-extrabold text-lg text-slate-800 dark:text-white">Platform Health Overview</h3>
+          <div className="glass-card p-6 flex flex-col gap-4">
+            <h3 className="font-bold text-lg text-black dark:text-white">Platform Health Overview</h3>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
-              <div className="p-4 bg-white/40 dark:bg-slate-900/20 border border-gray-200/20 dark:border-slate-800/40 rounded-xl">
-                <span className="text-xs text-gray-400 font-bold uppercase tracking-wider">Active Moderation Queue</span>
-                <p className="text-2xl font-black text-slate-800 dark:text-white mt-1">{stats.reports.pending}</p>
-                <p className="text-[10px] text-gray-400 font-semibold">Pending violation flags</p>
+              <div className="p-4 bg-slate-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl">
+                <span className="text-xs text-gray-600 dark:text-slate-500 font-bold uppercase tracking-wider">Active Moderation Queue</span>
+                <p className="text-2xl font-black text-black dark:text-white mt-1">{stats.reports.pending}</p>
+                <p className="text-[10px] text-gray-600 dark:text-slate-500 font-semibold">Pending violation flags</p>
               </div>
 
-              <div className="p-4 bg-white/40 dark:bg-slate-900/20 border border-gray-200/20 dark:border-slate-800/40 rounded-xl">
-                <span className="text-xs text-gray-400 font-bold uppercase tracking-wider">Lost & Found claims active</span>
-                <p className="text-2xl font-black text-slate-800 dark:text-white mt-1">{stats.lostFound.pendingClaims}</p>
-                <p className="text-[10px] text-gray-400 font-semibold">Requires student verification reviews</p>
+              <div className="p-4 bg-slate-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl">
+                <span className="text-xs text-gray-600 dark:text-slate-500 font-bold uppercase tracking-wider">Lost & Found claims active</span>
+                <p className="text-2xl font-black text-black dark:text-white mt-1">{stats.lostFound.pendingClaims}</p>
+                <p className="text-[10px] text-gray-600 dark:text-slate-500 font-semibold">Requires student verification reviews</p>
               </div>
 
-              <div className="p-4 bg-white/40 dark:bg-slate-900/20 border border-gray-200/20 dark:border-slate-800/40 rounded-xl">
-                <span className="text-xs text-gray-400 font-bold uppercase tracking-wider">Verified users ratio</span>
-                <p className="text-2xl font-black text-slate-800 dark:text-white mt-1">100%</p>
-                <p className="text-[10px] text-gray-400 font-semibold">All accounts locked to college .edu</p>
+              <div className="p-4 bg-slate-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl">
+                <span className="text-xs text-gray-600 dark:text-slate-500 font-bold uppercase tracking-wider">Verified users ratio</span>
+                <p className="text-2xl font-black text-black dark:text-white mt-1">100%</p>
+                <p className="text-[10px] text-gray-600 dark:text-slate-500 font-semibold">All accounts locked to college .edu</p>
               </div>
             </div>
           </div>
@@ -198,24 +200,24 @@ export default function AdminPanel() {
       {/* Tab 2 Content: Users Directory */}
       {activeTab === 'users' && (
         <div className="flex flex-col gap-4">
-          <h3 className="font-extrabold text-lg text-slate-800 dark:text-white">Registrants Database</h3>
+          <h3 className="font-bold text-lg text-black dark:text-white">Registrants Database</h3>
 
           {loading ? (
             <LoadingSkeleton type="list" count={3} />
           ) : usersList.length === 0 ? (
-            <EmptyState emoji="👥" title="No users found" description="No student registration profiles have been initialized." />
+            <EmptyState icon={Users} title="No users found" description="No student registration profiles have been initialized." />
           ) : (
             <div className="flex flex-col gap-3">
               {usersList.map(item => (
-                <div key={item.id} className="glass-panel border rounded-2xl p-4 flex justify-between items-center gap-4 flex-wrap">
+                <div key={item.id} className="glass-card p-4 flex justify-between items-center gap-4 flex-wrap">
                   <div className="flex items-center gap-3">
                     <img
                       src={item.profile?.avatar || 'https://api.dicebear.com/7.x/adventurer/svg?seed=avatar'}
                       alt="Avatar"
-                      className="w-10 h-10 rounded-lg bg-orange-100 object-cover"
+                      className="w-10 h-10 rounded-lg bg-orange-100 object-cover border border-gray-200"
                     />
                     <div>
-                      <h4 className="text-xs font-bold text-slate-800 dark:text-white flex items-center gap-1.5">
+                      <h4 className="text-sm font-bold text-black dark:text-white flex items-center gap-1.5 leading-snug">
                         {item.profile?.name || 'New Account'}
                         <span className={`text-[9px] font-bold px-1.5 py-0.2 rounded border ${
                           item.role === 'ADMIN' ? 'bg-orange-500/10 text-primary border-orange-500/20' : 'bg-blue-500/10 text-blue-500 border-blue-500/20'
@@ -223,20 +225,20 @@ export default function AdminPanel() {
                           {item.role}
                         </span>
                       </h4>
-                      <p className="text-[10px] text-gray-400 font-semibold">{item.email} • Major: {item.profile?.major || 'General'}</p>
+                      <p className="text-xs text-gray-600 dark:text-slate-500 font-semibold mt-0.5">{item.email} • Major: {item.profile?.major || 'General'}</p>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-6">
-                    <div className="text-right text-[10px] font-semibold text-gray-400 hidden sm:block">
-                      <p>Reputation: <span className="text-slate-800 dark:text-white font-bold">{item.profile?.reputationScore || 0}</span></p>
-                      <p>Trust Score: <span className="text-slate-800 dark:text-white font-bold">{item.profile?.trustScore || 100}%</span></p>
+                    <div className="text-right text-[10px] font-semibold text-gray-600 hidden sm:block">
+                      <p>Reputation: <span className="text-black dark:text-white font-bold">{item.profile?.reputationScore || 0}</span></p>
+                      <p>Trust Score: <span className="text-black dark:text-white font-bold">{item.profile?.trustScore || 100}%</span></p>
                     </div>
 
                     {item.role !== 'ADMIN' && (
                       <button
                         onClick={() => handleDeleteUser(item.id)}
-                        className="p-2 text-gray-400 hover:text-rose-500 hover:bg-rose-500/10 rounded-xl transition-all"
+                        className="p-2 text-gray-600 hover:text-rose-500 hover:bg-rose-500/10 rounded-xl transition-all"
                         title="Delete student user account"
                       >
                         <Trash2 className="w-4.5 h-4.5" />
@@ -253,38 +255,38 @@ export default function AdminPanel() {
       {/* Tab 3 Content: Moderation Queue */}
       {activeTab === 'reports' && (
         <div className="flex flex-col gap-4">
-          <h3 className="font-extrabold text-lg text-slate-800 dark:text-white">Active Moderation Flags</h3>
+          <h3 className="font-bold text-lg text-black dark:text-white">Active Moderation Flags</h3>
 
           {loading ? (
             <LoadingSkeleton type="list" count={3} />
           ) : reportsList.length === 0 ? (
-            <EmptyState emoji="🛡️" title="Clear Queue" description="You have no pending reports! Campus is clean." />
+            <EmptyState icon={Shield} title="Clear Queue" description="You have no pending reports! Campus is clean." />
           ) : (
             <div className="flex flex-col gap-4">
               {reportsList.map(rep => (
-                <div key={rep.id} className="glass-panel border rounded-2xl p-5 shadow-premium flex flex-col gap-3">
+                <div key={rep.id} className="glass-card p-6 flex flex-col gap-3">
                   <div className="flex justify-between items-start gap-4">
                     <div>
-                      <span className="text-[10px] font-bold text-rose-500 bg-rose-500/15 border border-rose-500/20 px-2 py-0.5 rounded uppercase">
+                      <span className="text-[10px] font-bold text-rose-500 bg-rose-500/10 border border-rose-500/20 px-2 py-0.5 rounded uppercase">
                         Violation reported
                       </span>
-                      <p className="text-xs text-gray-400 mt-1 font-semibold">Reported item: <strong className="text-slate-800 dark:text-white">"{rep.marketplaceItem?.title || 'Unknown Product'}"</strong></p>
+                      <p className="text-xs text-gray-600 dark:text-slate-500 mt-1.5 font-semibold">Reported item: <strong className="text-black dark:text-white">"{rep.marketplaceItem?.title || 'Unknown Product'}"</strong></p>
                     </div>
                     
                     <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${
-                      rep.status === 'PENDING' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20 animate-pulse' : 'bg-green-500/10 text-green-500 border-green-500/20'
+                      rep.status === 'PENDING' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' : 'bg-green-500/10 text-green-500 border-green-500/20'
                     }`}>
                       {rep.status}
                     </span>
                   </div>
 
-                  <div className="p-3 bg-white/50 dark:bg-slate-900/30 border border-gray-100 dark:border-slate-800/40 rounded-xl text-xs flex flex-col gap-1">
-                    <span className="font-bold text-slate-700 dark:text-slate-200">Reason:</span>
-                    <p className="font-semibold text-slate-600 dark:text-slate-300">"{rep.reason}"</p>
+                  <div className="p-3.5 bg-slate-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl text-xs flex flex-col gap-1.5">
+                    <span className="font-bold text-black dark:text-slate-200">Reason:</span>
+                    <p className="font-semibold text-[#374151] dark:text-slate-300">"{rep.reason}"</p>
                     
-                    <div className="border-t border-gray-200/20 dark:border-slate-800/40 my-1.5" />
+                    <div className="border-t border-gray-100 dark:border-slate-800 my-2" />
                     
-                    <div className="flex justify-between text-[10px] text-gray-400 font-bold">
+                    <div className="flex justify-between text-[10px] text-gray-600 font-bold">
                       <span>Reporter: {rep.reporter?.profile?.name || rep.reporter?.email}</span>
                       <span>Offending Seller: {rep.reportedUser?.profile?.name || rep.reportedUser?.email}</span>
                     </div>
@@ -294,14 +296,14 @@ export default function AdminPanel() {
                     <div className="flex gap-2 mt-1">
                       <button
                         onClick={() => handleResolveReport(rep.id, 'DELETE_ITEM')}
-                        className="flex-1 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold transition-all shadow-premium flex items-center justify-center gap-1"
+                        className="flex-grow btn-primary py-2 text-xs rounded-xl bg-rose-600 hover:bg-rose-700"
                       >
-                        <ShieldAlert className="w-4 h-4" /> Remove Item & Deduct Trust Score
+                        <ShieldAlert className="w-4 h-4" /> Remove Item & Penalize Seller
                       </button>
                       
                       <button
                         onClick={() => handleResolveReport(rep.id, 'RESOLVE')}
-                        className="px-4 py-2 border border-gray-300 dark:border-slate-800 hover:bg-green-500/10 hover:text-green-500 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold transition-all"
+                        className="px-4 py-2 border border-gray-200 hover:bg-slate-50 text-[#374151] dark:border-slate-800 dark:text-slate-305 dark:hover:bg-slate-800 rounded-xl text-xs font-bold transition-all"
                       >
                         Dismiss Flag
                       </button>

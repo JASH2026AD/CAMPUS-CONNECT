@@ -2,7 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useToast } from '../context/ToastContext';
 import { useAuth } from '../context/AuthContext';
 import { PageHeader, LoadingSkeleton, EmptyState } from '../components/Common';
-import { Search, Send, Calendar, Star, Check, X, ShieldAlert, Award, AlertCircle } from 'lucide-react';
+import { 
+  Search, Send, Calendar, Star, Check, X, 
+  ShieldAlert, Award, AlertCircle, Users, Inbox, MessageSquare 
+} from 'lucide-react';
 import api from '../api/axios';
 
 export default function SkillExchange() {
@@ -101,24 +104,24 @@ export default function SkillExchange() {
         skillName: exchangeSkill,
         message: requestMsg
       });
-
-      showToast('Skill exchange request sent! 🤝', 'success');
+      showToast('Skill exchange request sent.', 'success');
       setReqModalOpen(false);
       setRequestMsg('');
+      fetchPartners();
     } catch (err) {
-      console.error('Error sending skill request:', err);
-      showToast(err.response?.data?.error || 'Failed to send request.', 'error');
+      console.error('Error proposing exchange:', err);
+      showToast('Failed to send exchange request.', 'error');
     }
   };
 
   const handleRespondRequest = async (requestId, status) => {
     try {
-      await api.put(`/skills/request/${requestId}`, { status });
-      showToast(`Exchange request ${status.toLowerCase()}!`, 'success');
+      await api.put(`/skills/request/${requestId}/respond`, { status });
+      showToast(`Request ${status.toLowerCase()} successfully.`, 'success');
       fetchRequests();
     } catch (err) {
-      console.error('Error updating request:', err);
-      showToast('Failed to update request.', 'error');
+      console.error('Error responding to request:', err);
+      showToast('Failed to record response.', 'error');
     }
   };
 
@@ -129,83 +132,85 @@ export default function SkillExchange() {
 
   const handleScheduleSession = async (e) => {
     e.preventDefault();
-    if (!scheduleTime) return;
+    if (!scheduleTime) {
+      showToast('Please choose a valid time slot.', 'warning');
+      return;
+    }
 
     try {
-      await api.post('/skills/session', {
-        requestId: selectedRequest.id,
-        scheduledAt: scheduleTime
+      await api.post(`/skills/request/${selectedRequest.id}/schedule`, {
+        scheduledAt: new Date(scheduleTime).toISOString()
       });
-
-      showToast('Exchange session scheduled successfully! 📅', 'success');
+      showToast('Session scheduled and synced.', 'success');
       setScheduleModalOpen(false);
       setScheduleTime('');
       fetchRequests();
     } catch (err) {
-      console.error('Scheduling error:', err);
-      showToast('Failed to schedule session.', 'error');
+      console.error('Error scheduling session:', err);
+      showToast('Failed to schedule session slot.', 'error');
     }
   };
 
   const handleOpenRate = (session) => {
     setSelectedSession(session);
+    setSessionRating(5);
+    setSessionReview('');
     setRateModalOpen(true);
   };
 
   const handleCompleteSession = async (e) => {
     e.preventDefault();
+    if (!sessionReview.trim()) return;
+
     try {
-      await api.put(`/skills/session/${selectedSession.id}/complete`, {
+      await api.post(`/skills/session/${selectedSession.id}/rate`, {
         rating: sessionRating,
         review: sessionReview
       });
-
-      showToast('Session rated! Reputation score and skills profile adjusted. ✨', 'success');
+      showToast('Session rated! Reputation score adjusted.', 'success');
       setRateModalOpen(false);
-      setSessionReview('');
-      setSessionRating(5);
       fetchRequests();
     } catch (err) {
-      console.error('Error rating session:', err);
+      console.error('Error completing session:', err);
       showToast('Failed to complete session.', 'error');
     }
   };
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-6 text-left">
-      <PageHeader title="Skill Exchange Network" subtitle="Swap expertise, coding help, languages, and study advice with peers" emoji="🤝" />
+      <PageHeader title="Skill Exchange Network" subtitle="Swap expertise, coding help, languages, and study advice with peers" icon={Users} />
 
       {/* Tabs */}
-      <div className="border-b border-gray-200/40 dark:border-slate-800/40 flex gap-4">
+      <div className="border-b border-gray-200 dark:border-slate-800 flex gap-4">
         <button
           onClick={() => setActiveTab('browse')}
-          className={`pb-3 text-sm font-extrabold border-b-2 transition-all ${
+          className={`pb-3 text-sm font-semibold border-b-2 transition-all flex items-center gap-1.5 ${
             activeTab === 'browse'
               ? 'border-primary text-primary'
-              : 'border-transparent text-gray-400 hover:text-gray-600 dark:hover:text-gray-200'
+              : 'border-transparent text-gray-600 hover:text-gray-600 dark:hover:text-gray-200'
           }`}
         >
-          Find Study Partners 🔍
+          <Search className="w-4 h-4" /> Find Study Partners
         </button>
         <button
           onClick={() => setActiveTab('requests')}
-          className={`pb-3 text-sm font-extrabold border-b-2 transition-all ${
+          className={`pb-3 text-sm font-semibold border-b-2 transition-all flex items-center gap-1.5 ${
             activeTab === 'requests'
               ? 'border-primary text-primary'
-              : 'border-transparent text-gray-400 hover:text-gray-600 dark:hover:text-gray-200'
+              : 'border-transparent text-gray-600 hover:text-gray-600 dark:hover:text-gray-200'
           }`}
         >
-          My Requests 📩
+          <Inbox className="w-4 h-4" /> My Requests
         </button>
         <button
           onClick={() => setActiveTab('sessions')}
-          className={`pb-3 text-sm font-extrabold border-b-2 transition-all ${
+          className={`pb-3 text-sm font-semibold border-b-2 transition-all flex items-center gap-1.5 ${
             activeTab === 'sessions'
               ? 'border-primary text-primary'
-              : 'border-transparent text-gray-400 hover:text-gray-600 dark:hover:text-gray-200'
+              : 'border-transparent text-gray-600 hover:text-gray-600 dark:hover:text-gray-200'
           }`}
         >
-          Scheduled Sessions 📅
+          <Calendar className="w-4 h-4" /> Scheduled Sessions
         </button>
       </div>
 
@@ -214,7 +219,7 @@ export default function SkillExchange() {
         <div className="flex flex-col gap-6">
           <form onSubmit={handleSearchSubmit} className="flex gap-3 flex-wrap items-center">
             <div className="relative flex-1 min-w-[240px]">
-              <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+              <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-600">
                 <Search className="w-4 h-4" />
               </span>
               <input
@@ -222,20 +227,20 @@ export default function SkillExchange() {
                 placeholder="Search skills (e.g. React, C++, Physics)..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-4 py-2.5 text-xs rounded-xl border border-gray-200 dark:border-slate-800 bg-white/60 dark:bg-slate-900/30 text-slate-800 dark:text-white focus:outline-none"
+                className="w-full pl-9 pr-4 py-2.5 text-xs rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-black dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary font-medium"
               />
             </div>
             
             <select
               value={searchType}
               onChange={(e) => setSearchType(e.target.value)}
-              className="px-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-800 bg-white/60 dark:bg-slate-900/30 text-xs font-bold focus:outline-none"
+              className="px-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs font-semibold focus:outline-none"
             >
               <option value="OFFERED">Offering Skill (Learn from them)</option>
               <option value="WANTED">Wanted Skill (Teach them)</option>
             </select>
 
-            <button type="submit" className="px-6 py-2.5 bg-primary hover:bg-primary-dark text-white rounded-xl text-xs font-bold transition-all shadow-premium">
+            <button type="submit" className="px-5 py-2.5 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xs font-bold transition-all">
               Search
             </button>
           </form>
@@ -243,19 +248,19 @@ export default function SkillExchange() {
           {browseLoading ? (
             <LoadingSkeleton type="card" count={3} />
           ) : partners.length === 0 ? (
-            <EmptyState emoji="🕵️" title="No partners found" description="Try searching for a different skill, or check if study partners have listed tags." />
+            <EmptyState icon={Users} title="No partners found" description="Try searching for a different skill, or check if study partners have listed tags." />
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {partners.map(p => (
-                <div key={p.id} className="glass-card border rounded-2xl p-5 shadow-premium flex flex-col justify-between gap-5 relative hover:scale-[1.01] transition-transform">
+                <div key={p.id} className="glass-card p-6 flex flex-col justify-between gap-5 relative">
                   <div className="flex items-start gap-4">
                     <img
                       src={p.avatar || 'https://api.dicebear.com/7.x/adventurer/svg?seed=avatar'}
                       alt="Avatar"
-                      className="w-12 h-12 rounded-xl bg-orange-50 object-cover shadow-sm"
+                      className="w-12 h-12 rounded-xl bg-orange-50 object-cover shadow-xs border border-gray-100"
                     />
                     <div className="text-left flex-1">
-                      <h4 className="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-1">
+                      <h4 className="font-bold text-black dark:text-slate-100 flex items-center gap-1 text-base">
                         {p.name}
                         {p.skillRating > 0 && (
                           <span className="text-[10px] text-amber-500 font-bold flex items-center gap-0.5 ml-1">
@@ -263,8 +268,8 @@ export default function SkillExchange() {
                           </span>
                         )}
                       </h4>
-                      <p className="text-[10px] text-gray-400 font-semibold">{p.major || 'Student'} • Class of {p.graduationYear || 'N/A'}</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 mt-2 leading-relaxed">
+                      <p className="text-[10px] text-gray-600 font-semibold">{p.major || 'Student'} • Class of {p.graduationYear || 'N/A'}</p>
+                      <p className="text-xs text-gray-700 dark:text-gray-400 line-clamp-2 mt-2 leading-relaxed">
                         "{p.bio || 'Available for exchange requests.'}"
                       </p>
                     </div>
@@ -273,10 +278,10 @@ export default function SkillExchange() {
                   <div className="flex flex-col gap-3">
                     {/* Skills Offered */}
                     <div className="flex flex-col gap-1">
-                      <span className="text-[10px] font-bold text-green-500 uppercase tracking-wide">Teaches:</span>
+                      <span className="text-[10px] font-bold text-green-600 uppercase tracking-wide">Teaches:</span>
                       <div className="flex flex-wrap gap-1.5">
                         {p.skills.filter(s => s.type === 'OFFERED').map(s => (
-                          <span key={s.id} className="px-2 py-0.5 rounded-lg bg-green-500/10 border border-green-500/20 text-green-700 dark:text-green-300 text-[10px] font-semibold">
+                          <span key={s.id} className="px-2 py-0.5 rounded-lg bg-green-500/10 border border-green-500/10 text-green-700 dark:text-green-300 text-[10px] font-semibold">
                             {s.name}
                           </span>
                         ))}
@@ -285,10 +290,10 @@ export default function SkillExchange() {
 
                     {/* Skills Wanted */}
                     <div className="flex flex-col gap-1">
-                      <span className="text-[10px] font-bold text-amber-500 uppercase tracking-wide">Wants:</span>
+                      <span className="text-[10px] font-bold text-blue-600 uppercase tracking-wide">Wants:</span>
                       <div className="flex flex-wrap gap-1.5">
                         {p.skills.filter(s => s.type === 'WANTED').map(s => (
-                          <span key={s.id} className="px-2 py-0.5 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-700 dark:text-blue-300 text-[10px] font-semibold">
+                          <span key={s.id} className="px-2 py-0.5 rounded-lg bg-blue-500/10 border border-blue-500/10 text-blue-700 dark:text-blue-300 text-[10px] font-semibold">
                             {s.name}
                           </span>
                         ))}
@@ -298,9 +303,9 @@ export default function SkillExchange() {
 
                   <button
                     onClick={() => handleOpenRequest(p)}
-                    className="w-full mt-2 py-2 bg-primary hover:bg-primary-dark text-white rounded-xl text-xs font-bold transition-all shadow-premium"
+                    className="w-full btn-primary py-2.5 text-xs rounded-xl"
                   >
-                    Request Exchange 🤝
+                    Request Exchange
                   </button>
                 </div>
               ))}
@@ -315,28 +320,28 @@ export default function SkillExchange() {
           
           {/* Incoming Requests */}
           <div className="flex flex-col gap-4">
-            <h3 className="font-extrabold text-lg text-slate-800 dark:text-white flex items-center gap-1.5">
-              📥 Received Requests
+            <h3 className="font-bold text-lg text-black dark:text-white flex items-center gap-2">
+              <Inbox className="w-5 h-5 text-primary" /> Received Requests
             </h3>
 
             {requestsLoading ? (
               <LoadingSkeleton type="list" count={2} />
             ) : requests.filter(r => r.receiverId === user.id).length === 0 ? (
-              <EmptyState emoji="📥" title="No received requests" description="Study partners will reach out here to exchange matching skills." />
+              <EmptyState icon={Inbox} title="No received requests" description="Study partners will reach out here to exchange matching skills." />
             ) : (
               <div className="flex flex-col gap-4">
                 {requests.filter(r => r.receiverId === user.id).map(req => (
-                  <div key={req.id} className="glass-panel border rounded-2xl p-5 shadow-premium flex flex-col gap-3">
+                  <div key={req.id} className="glass-card p-6 flex flex-col gap-3">
                     <div className="flex justify-between items-start gap-4">
                       <div className="flex items-center gap-2">
                         <img
                           src={req.sender.profile?.avatar || 'https://api.dicebear.com/7.x/adventurer/svg?seed=avatar'}
                           alt="Avatar"
-                          className="w-9 h-9 rounded-lg bg-orange-50 object-cover"
+                          className="w-9 h-9 rounded-lg bg-orange-50 object-cover border border-gray-100"
                         />
                         <div>
-                          <p className="text-xs font-bold text-slate-800 dark:text-slate-100">{req.sender.profile?.name}</p>
-                          <p className="text-[10px] text-gray-400">Class of {req.sender.profile?.graduationYear}</p>
+                          <p className="text-xs font-bold text-black dark:text-slate-100">{req.sender.profile?.name}</p>
+                          <p className="text-[10px] text-gray-600">Class of {req.sender.profile?.graduationYear}</p>
                         </div>
                       </div>
                       <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
@@ -348,12 +353,12 @@ export default function SkillExchange() {
                       </span>
                     </div>
 
-                    <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed font-semibold">
+                    <p className="text-xs text-[#374151] dark:text-slate-300 leading-relaxed font-semibold">
                       wants to learn: <span className="text-primary font-bold">"{req.skillName}"</span>
                     </p>
                     
                     {req.message && (
-                      <p className="text-xs text-gray-400 italic bg-white/50 dark:bg-slate-900/20 p-2.5 rounded-lg border border-gray-100 dark:border-slate-800/40">
+                      <p className="text-xs text-gray-600 dark:text-slate-500 italic bg-slate-50 dark:bg-slate-900/40 p-2.5 rounded-lg border border-gray-100 dark:border-slate-800/40">
                         "{req.message}"
                       </p>
                     )}
@@ -362,13 +367,13 @@ export default function SkillExchange() {
                       <div className="flex gap-2 mt-1">
                         <button
                           onClick={() => handleRespondRequest(req.id, 'ACCEPTED')}
-                          className="flex-1 py-2 bg-green-500 hover:bg-green-600 text-white rounded-xl text-xs font-bold transition-all shadow-premium"
+                          className="flex-1 btn-primary py-2 text-xs rounded-xl"
                         >
                           Accept
                         </button>
                         <button
                           onClick={() => handleRespondRequest(req.id, 'REJECTED')}
-                          className="flex-1 py-2 border border-gray-300 dark:border-slate-800 hover:bg-red-500/10 hover:text-red-500 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold transition-all"
+                          className="flex-1 py-2 border border-gray-200 hover:bg-rose-50 hover:text-rose-600 text-[#374151] dark:border-slate-800 dark:text-slate-300 dark:hover:bg-rose-950/20 rounded-xl text-xs font-bold transition-all"
                         >
                           Reject
                         </button>
@@ -378,9 +383,9 @@ export default function SkillExchange() {
                     {req.status === 'ACCEPTED' && req.sessions.length === 0 && (
                       <button
                         onClick={() => handleOpenSchedule(req)}
-                        className="w-full py-2 bg-primary hover:bg-primary-dark text-white rounded-xl text-xs font-bold transition-all shadow-premium"
+                        className="w-full btn-primary py-2 text-xs rounded-xl"
                       >
-                        Schedule Session 📅
+                        <Calendar className="w-3.5 h-3.5" /> Schedule Session
                       </button>
                     )}
                   </div>
@@ -391,28 +396,28 @@ export default function SkillExchange() {
 
           {/* Outgoing Requests */}
           <div className="flex flex-col gap-4">
-            <h3 className="font-extrabold text-lg text-slate-800 dark:text-white flex items-center gap-1.5">
-              📤 Sent Requests
+            <h3 className="font-bold text-lg text-black dark:text-white flex items-center gap-2">
+              <Send className="w-4.5 h-4.5 text-primary" /> Sent Requests
             </h3>
 
             {requestsLoading ? (
               <LoadingSkeleton type="list" count={2} />
             ) : requests.filter(r => r.senderId === user.id).length === 0 ? (
-              <EmptyState emoji="📤" title="No sent requests" description="Reach out to students on the browsing tab to request skill matches." />
+              <EmptyState icon={Send} title="No sent requests" description="Reach out to students on the browsing tab to request skill matches." />
             ) : (
               <div className="flex flex-col gap-4">
                 {requests.filter(r => r.senderId === user.id).map(req => (
-                  <div key={req.id} className="glass-panel border rounded-2xl p-5 shadow-premium flex flex-col gap-3">
+                  <div key={req.id} className="glass-card p-6 flex flex-col gap-3">
                     <div className="flex justify-between items-start gap-4">
                       <div className="flex items-center gap-2">
                         <img
                           src={req.receiver.profile?.avatar || 'https://api.dicebear.com/7.x/adventurer/svg?seed=avatar'}
                           alt="Avatar"
-                          className="w-9 h-9 rounded-lg bg-orange-50 object-cover"
+                          className="w-9 h-9 rounded-lg bg-orange-50 object-cover border border-gray-100"
                         />
                         <div>
-                          <p className="text-xs font-bold text-slate-800 dark:text-slate-100">{req.receiver.profile?.name}</p>
-                          <p className="text-[10px] text-gray-400">Class of {req.receiver.profile?.graduationYear}</p>
+                          <p className="text-xs font-bold text-black dark:text-slate-100">{req.receiver.profile?.name}</p>
+                          <p className="text-[10px] text-gray-600">Class of {req.receiver.profile?.graduationYear}</p>
                         </div>
                       </div>
                       <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
@@ -424,16 +429,16 @@ export default function SkillExchange() {
                       </span>
                     </div>
 
-                    <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed font-semibold">
+                    <p className="text-xs text-[#374151] dark:text-slate-300 leading-relaxed font-semibold">
                       Requested to learn: <span className="text-primary font-bold">"{req.skillName}"</span>
                     </p>
                     
                     {req.status === 'ACCEPTED' && req.sessions.length === 0 && (
                       <button
                         onClick={() => handleOpenSchedule(req)}
-                        className="w-full py-2 bg-primary hover:bg-primary-dark text-white rounded-xl text-xs font-bold transition-all shadow-premium"
+                        className="w-full btn-primary py-2 text-xs rounded-xl"
                       >
-                        Schedule Session 📅
+                        <Calendar className="w-3.5 h-3.5" /> Schedule Session
                       </button>
                     )}
                   </div>
@@ -448,14 +453,14 @@ export default function SkillExchange() {
       {/* Tab 3 Content: Scheduled Sessions */}
       {activeTab === 'sessions' && (
         <div className="flex flex-col gap-4">
-          <h3 className="font-extrabold text-lg text-slate-800 dark:text-white flex items-center gap-1.5">
-            📅 Active Scheduled Sessions
+          <h3 className="font-bold text-lg text-black dark:text-white flex items-center gap-2">
+            <Calendar className="w-5 h-5 text-primary" /> Active Scheduled Sessions
           </h3>
 
           {requestsLoading ? (
             <LoadingSkeleton type="list" count={2} />
           ) : !requests.some(r => r.sessions.length > 0) ? (
-            <EmptyState emoji="📅" title="No active sessions" description="Accept a request and schedule a calendar session slot to track completion." />
+            <EmptyState icon={Calendar} title="No active sessions" description="Accept a request and schedule a calendar session slot to track completion." />
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {requests.flatMap(req => req.sessions.map(sess => {
@@ -464,13 +469,15 @@ export default function SkillExchange() {
                 const rated = isSender ? sess.ratingToReceiver !== null : sess.ratingToSender !== null;
 
                 return (
-                  <div key={sess.id} className="glass-panel border rounded-2xl p-5 shadow-premium flex flex-col justify-between gap-4">
+                  <div key={sess.id} className="glass-card p-6 flex flex-col justify-between gap-4">
                     <div className="flex justify-between items-start gap-4">
                       <div className="flex items-center gap-3">
-                        <span className="text-2xl">🤝</span>
+                        <div className="p-2 rounded-lg bg-orange-50 dark:bg-orange-950/20 text-primary">
+                          <Users className="w-4.5 h-4.5" />
+                        </div>
                         <div>
-                          <p className="text-sm font-extrabold text-slate-800 dark:text-white">{req.skillName} Exchange</p>
-                          <p className="text-xs text-gray-400">Partner: {partnerProfile?.name}</p>
+                          <p className="text-sm font-bold text-black dark:text-white">{req.skillName} Exchange</p>
+                          <p className="text-xs text-gray-600 dark:text-slate-500">Partner: {partnerProfile?.name}</p>
                         </div>
                       </div>
                       <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
@@ -481,9 +488,9 @@ export default function SkillExchange() {
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-2 p-3 rounded-xl bg-white/40 dark:bg-slate-900/30 border border-gray-100 dark:border-slate-800/40 text-xs">
+                    <div className="flex items-center gap-2 p-3 rounded-xl bg-slate-50 dark:bg-slate-900/40 border border-gray-100 dark:border-slate-800 text-xs font-semibold">
                       <Calendar className="w-4 h-4 text-primary" />
-                      <span className="text-slate-600 dark:text-gray-300 font-semibold">
+                      <span className="text-slate-600 dark:text-gray-300">
                         Scheduled for: {new Date(sess.scheduledAt).toLocaleString()}
                       </span>
                     </div>
@@ -491,9 +498,9 @@ export default function SkillExchange() {
                     {sess.status === 'SCHEDULED' && !rated && (
                       <button
                         onClick={() => handleOpenRate(sess)}
-                        className="w-full py-2 bg-slate-800 hover:bg-slate-950 dark:bg-slate-700 text-white rounded-xl text-xs font-bold transition-all"
+                        className="w-full btn-primary py-2.5 text-xs rounded-xl"
                       >
-                        Complete Exchange & Rate Partner ✨
+                        Complete Exchange & Rate Partner
                       </button>
                     )}
 
@@ -513,42 +520,42 @@ export default function SkillExchange() {
 
       {/* Exchange Request Modal */}
       {reqModalOpen && selectedPartner && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-          <div className="max-w-md w-full glass-panel border rounded-3xl p-6 shadow-premium flex flex-col gap-4 text-left relative animate-float">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
+          <div className="max-w-md w-full bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-2xl p-6 shadow-lg flex flex-col gap-4 text-left relative animate-float">
             <button onClick={() => setReqModalOpen(false)} className="absolute top-4 right-4 p-1 rounded-lg hover:bg-black/5 dark:hover:bg-white/5">
-              <X className="w-5 h-5 text-gray-500" />
+              <X className="w-5 h-5 text-gray-700" />
             </button>
-            <h3 className="text-lg font-bold text-slate-800 dark:text-white">Propose Skill Exchange</h3>
-            <p className="text-xs text-gray-400">Requesting learning matching with <strong className="text-slate-800 dark:text-white">{selectedPartner.name}</strong>.</p>
+            <h3 className="text-lg font-bold text-black dark:text-white">Propose Skill Exchange</h3>
+            <p className="text-xs text-gray-600 dark:text-slate-500">Requesting learning matching with <strong className="text-black dark:text-white">{selectedPartner.name}</strong>.</p>
 
             <form onSubmit={handleSendRequest} className="flex flex-col gap-4">
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-bold text-gray-400 uppercase">Skill You Want To Learn *</label>
+                <label className="text-xs font-bold text-gray-600 uppercase">Skill You Want To Learn *</label>
                 <input
                   type="text"
                   placeholder="e.g. React.js"
                   value={exchangeSkill}
                   onChange={(e) => setExchangeSkill(e.target.value)}
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-gray-200 dark:border-slate-800 bg-white/40 dark:bg-slate-900/30 text-slate-800 dark:text-white focus:outline-none"
+                  className="w-full px-3 py-2 text-xs rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-black dark:text-white focus:outline-none"
                   required
                 />
               </div>
 
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-bold text-gray-400 uppercase">Personal Message</label>
+                <label className="text-xs font-bold text-gray-600 uppercase">Personal Message</label>
                 <textarea
                   placeholder="Tell them what you can teach in return (e.g. C++ or Spanish) and when you're free..."
                   value={requestMsg}
                   onChange={(e) => setRequestMsg(e.target.value)}
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-gray-200 dark:border-slate-800 bg-white/40 dark:bg-slate-900/30 text-slate-800 dark:text-white focus:outline-none h-24 resize-none"
+                  className="w-full px-3 py-2 text-xs rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-black dark:text-white focus:outline-none h-24 resize-none"
                 />
               </div>
 
               <button
                 type="submit"
-                className="w-full py-2.5 bg-primary hover:bg-primary-dark text-white rounded-xl text-xs font-bold transition-all shadow-premium"
+                className="w-full btn-primary py-2.5 text-xs rounded-xl"
               >
-                Send Propose request 📩
+                Send Request
               </button>
             </form>
           </div>
@@ -557,31 +564,31 @@ export default function SkillExchange() {
 
       {/* Schedule Modal */}
       {scheduleModalOpen && selectedRequest && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-          <div className="max-w-md w-full glass-panel border rounded-3xl p-6 shadow-premium flex flex-col gap-4 text-left relative animate-float">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
+          <div className="max-w-md w-full bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-2xl p-6 shadow-lg flex flex-col gap-4 text-left relative animate-float">
             <button onClick={() => setScheduleModalOpen(false)} className="absolute top-4 right-4 p-1 rounded-lg hover:bg-black/5 dark:hover:bg-white/5">
-              <X className="w-5 h-5 text-gray-500" />
+              <X className="w-5 h-5 text-gray-700" />
             </button>
-            <h3 className="text-lg font-bold text-slate-800 dark:text-white">Schedule Study Session</h3>
-            <p className="text-xs text-gray-400">Lock down a date and time slot for matching.</p>
+            <h3 className="text-lg font-bold text-black dark:text-white">Schedule Study Session</h3>
+            <p className="text-xs text-gray-600 dark:text-slate-500">Lock down a date and time slot for matching.</p>
 
             <form onSubmit={handleScheduleSession} className="flex flex-col gap-4">
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-bold text-gray-400 uppercase">Session Time *</label>
+                <label className="text-xs font-bold text-gray-600 uppercase">Session Time *</label>
                 <input
                   type="datetime-local"
                   value={scheduleTime}
                   onChange={(e) => setScheduleTime(e.target.value)}
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-gray-200 dark:border-slate-800 bg-white/40 dark:bg-slate-900/30 text-slate-800 dark:text-white focus:outline-none"
+                  className="w-full px-3 py-2 text-xs rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-black dark:text-white focus:outline-none font-semibold"
                   required
                 />
               </div>
 
               <button
                 type="submit"
-                className="w-full py-2.5 bg-primary hover:bg-primary-dark text-white rounded-xl text-xs font-bold transition-all shadow-premium"
+                className="w-full btn-primary py-2.5 text-xs rounded-xl"
               >
-                Schedule Session Slot 📅
+                Schedule Session Slot
               </button>
             </form>
           </div>
@@ -590,18 +597,18 @@ export default function SkillExchange() {
 
       {/* Complete & Rate Session Modal */}
       {rateModalOpen && selectedSession && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-          <div className="max-w-md w-full glass-panel border rounded-3xl p-6 shadow-premium flex flex-col gap-4 text-left relative animate-float">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
+          <div className="max-w-md w-full bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-2xl p-6 shadow-lg flex flex-col gap-4 text-left relative animate-float">
             <button onClick={() => setRateModalOpen(false)} className="absolute top-4 right-4 p-1 rounded-lg hover:bg-black/5 dark:hover:bg-white/5">
-              <X className="w-5 h-5 text-gray-500" />
+              <X className="w-5 h-5 text-gray-700" />
             </button>
-            <h3 className="text-lg font-bold text-slate-800 dark:text-white">Complete & Rate Partner</h3>
-            <p className="text-xs text-gray-400">Rate your partner's helpfulness. Both ratings must be logged to complete session.</p>
+            <h3 className="text-lg font-bold text-black dark:text-white">Complete & Rate Partner</h3>
+            <p className="text-xs text-gray-600 dark:text-slate-500">Rate your partner's helpfulness. Both ratings must be logged to complete session.</p>
 
             <form onSubmit={handleCompleteSession} className="flex flex-col gap-4">
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-bold text-gray-400 uppercase">Partner Rating</label>
-                <div className="flex gap-1.5">
+                <label className="text-xs font-bold text-gray-600 uppercase">Partner Rating</label>
+                <div className="flex gap-1.5 mt-1">
                   {[1, 2, 3, 4, 5].map(num => (
                     <button
                       key={num}
@@ -616,19 +623,19 @@ export default function SkillExchange() {
               </div>
 
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-bold text-gray-400 uppercase">Review Feedback</label>
+                <label className="text-xs font-bold text-gray-600 uppercase">Review Feedback</label>
                 <textarea
                   placeholder="Describe your study session handoff quality (e.g. Alice explained React context very clearly)..."
                   value={sessionReview}
                   onChange={(e) => setSessionReview(e.target.value)}
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-gray-200 dark:border-slate-800 bg-white/40 dark:bg-slate-900/30 text-slate-800 dark:text-white focus:outline-none h-24 resize-none"
+                  className="w-full px-3 py-2 text-xs rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-black dark:text-white focus:outline-none h-24 resize-none"
                   required
                 />
               </div>
 
               <button
                 type="submit"
-                className="w-full py-2.5 bg-green-500 hover:bg-green-600 text-white rounded-xl text-xs font-bold transition-all shadow-premium"
+                className="w-full btn-primary py-2.5 text-xs rounded-xl bg-green-600 hover:bg-green-700"
               >
                 Complete & Submit Rating
               </button>
